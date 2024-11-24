@@ -3,7 +3,6 @@ library(wisconsink12)
 library(cityforwardcollective)
 library(scales)
 library(glue)
-library(ggbeeswarm)
 
 prof <- read_rds("data/wi_all_school_test_results.rda")
 
@@ -19,8 +18,8 @@ t <- prof |>
   ungroup()
 
 ty_citywide <- t |> 
-  filter(school_year == "2023-24") 
-  
+  filter(school_year == "2022-23") 
+
 
 no_rc <- prof |> 
   filter(school_year == "2021-22") |> 
@@ -39,7 +38,7 @@ prof |>
 
 
 rc_with_prof <- make_mke_rc() |> 
-  filter(school_year == "2023-24") |> 
+  filter(school_year == "2022-23") |> 
   left_join(prof) |> 
   group_by(meeting = case_when(overall_score >= 70.0 ~ "Schools Exceeding\nExpectations", 
                                overall_score >= 58.0 ~ "Schools Meeting\nExpectations",
@@ -56,8 +55,6 @@ rc_with_prof <- make_mke_rc() |>
            test_subject) |> 
   mutate(perc = total / sum(total))
 
-
-
 # prof_pa <- prof |> 
 #   filter(pa == "pa")
 # 
@@ -71,14 +68,6 @@ rc_with_prof <- make_mke_rc() |>
 #            test_subject) |> 
 #   summarise(wm = weighted.mean(total_count, w = perc)) 
 
-with_city_school <- rc_with_prof |> 
-  # bind_rows(ty_citywide) |> 
-  mutate(test_subject = ifelse(test_subject == "Mathematics", "Math", test_subject),
-         pa = case_when(pa == "bb" ~ "Below Grade Level",
-                        pa == "pa" ~ "At or Above Grade Level",
-                        pa == "no_test" ~ "No Test")) |> 
-  arrange(meeting, test_subject, desc(pa))
-
 with_city <- rc_with_prof |> 
   # bind_rows(ty_citywide) |> 
   mutate(test_subject = ifelse(test_subject == "Mathematics", "Math", test_subject),
@@ -88,7 +77,7 @@ with_city <- rc_with_prof |>
   arrange(meeting, test_subject, desc(pa)) |> 
   group_by(meeting, test_subject) |> 
   mutate(cum = cumsum(perc) - perc / 2)
-  
+
 with_city |> 
   ggplot(aes(test_subject, perc, fill = pa)) +
   geom_col(width = .75) +
@@ -151,53 +140,11 @@ with_city |>
 ggsave("plots/proficiency_by_rc_rating.png", bg = "white")
 
 
-# showing individual schools
 
-rc_with_prof_school <- make_mke_rc() |> 
-  filter(school_year == "2023-24") |> 
-  left_join(prof) |> 
-  mutate(meeting = case_when(overall_score >= 70.0 ~ "Schools Exceeding\nExpectations", 
-                               overall_score >= 58.0 ~ "Schools Meeting\nExpectations",
-                               !is.na(overall_score) ~ "Schools Not Meeting\nExpectations",
-                               TRUE ~ "NO SCORE")) |> 
-  # filter(!is.na(pa) & meeting != "NO SCORE") 
-  filter(pa == "pa")
+rc_with_prof |> 
+  group_by(test_subject, pa) |> 
+  summarise(total = sum(total)) |> 
+  ungroup() |> 
+  group_by(test_subject) |> 
+  mutate(perc = total / sum(total))
 
-rc_with_prof_school |> 
-  filter(meeting != "NO SCORE") |> 
-  ggplot(aes(test_subject, perc, color = test_subject)) +
-  geom_quasirandom(alpha = .5, width = .25) +
-  facet_wrap(~ meeting, strip.position = "bottom", nrow = 1) +
-  scale_y_continuous(labels = label_percent()) +
-  theme(legend.position = "bottom",
-        legend.margin = margin(t = -10),
-        legend.text = element_text(size = 14),
-        text = element_text(family = "Verdana", lineheight = 1.1),
-        plot.title = element_text(family = "Georgia", face = "bold",
-                                  margin = margin(b = 20)),
-        plot.subtitle = element_text(color = "grey30",
-                                     margin = margin(b = 40)),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.spacing = unit(0, "lines"),
-        strip.placement = "outside",
-        # strip.background = element_rect(fill = "red"),
-        strip.text = element_text(margin = margin(t = 10, b = 10),
-                                  face = "bold"),
-        axis.text = element_text(size = 14),
-        axis.text.x = element_text(size = 12),
-        axis.title.y = element_text(size = 16, margin = margin(r = 10)),        
-        plot.title.position = "plot",
-        plot.caption.position = "plot",
-        plot.caption = element_text(hjust = 0, color = "grey50", size = 8,
-                                    margin = margin(t = 20))) +
-  labs(y = "Percent Meeting on State Tests")
-
-
-
-
-make_mke_rc() |> 
-  filter(school_year == "2023-24") |> 
-  ggplot(aes(per_ed, sch_ach)) + 
-  geom_point() +
-  geom_smooth(method = "lm")

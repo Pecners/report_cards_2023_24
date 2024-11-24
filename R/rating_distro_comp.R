@@ -147,10 +147,17 @@ rating_change |>
                    y = .375, yend = .39), lineend = "round",
                color = "grey50") +
   annotate(geom = "text", x = 4, y = .395, vjust = 0, size = 5,
-           label = "62% of students were in schools\nmeeting or exceeding expectations in 2023-24", color = "grey50") +
+           label = "63% of students were in schools\nmeeting or exceeding expectations in 2023-24", color = "grey50") +
+  annotate(geom = "text", x = 1, y = .3, vjust = 0, size = 5,
+           color = "grey50",
+           label = "Share of students in\none star schools increased") +
+  geom_segment(aes(x = 1, xend = 1,
+                   y = .29, yend = .15), lineend = "round",
+               color = "grey50", 
+               arrow = arrow(length = unit(3, "mm"), type = "closed")) +
   coord_cartesian(clip = "off") +
   labs(y = "", x = "Report Card Rating",
-       title = "Year-to-year comparison of Milwaukee school report card ratings",
+       title = "Milwaukee student enrollment by School Report Card rating",
        # title = glue("Comparing <span style='color:{cfc_darkblue}'>**2021-22 school year**</span> ",
        #                 "with <span style='color:{cfc_orange}'>**2023-24 school year**</span> results"),
        fill = "School Year") +
@@ -162,7 +169,10 @@ rating_change |>
         plot.caption = element_text(color = "grey50", size = 10,
                                     margin = margin(t = 20)),
         plot.title.position = "plot",
-        legend.position = c(.1, .85),
+        legend.position = c(.15, 1.02),
+        legend.direction = "horizontal",
+        # legend.position = "top",
+        # legend.margin = margin(b = 20),
         axis.text.y = element_text(size = 8, hjust = .5))
 
 ggsave("plots/2023-24/enrollment_by_rc_rating_citywide_23-24_no_sub.png", bg = "white",

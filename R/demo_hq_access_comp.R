@@ -2,14 +2,14 @@ targets <- c("Meets Expectations",
              "Exceeds Expectations",
              "Significantly Exceeds Expectations")
 
-demo_gaps <- rated_schools %>%
-  filter(school_year > "2020-21" & str_detect(clean_rating, "Expectations")) %>%
+demo_gaps <- make_mke_rc() %>%
+  filter(school_year > "2021-22" & str_detect(overall_rating, "Expectations")) %>%
   pivot_longer(cols = starts_with("per_"), names_to = "group", values_to = "value") %>%
   filter(!group %in% c("per_choice", "per_open", "per_lep")) %>%
   mutate(group = ifelse(group %in% c("per_am_in",
                                      "per_tom",
                                      "per_nh_opi"), "per_other", group),
-         quality = ifelse(clean_rating %in% targets, "hq", "not"),
+         quality = ifelse(overall_rating %in% targets, "hq", "not"),
          est_enr = school_enrollment * value)  %>%
   filter(!group %in% c("per_other", "per_asian")) %>%
   group_by(quality, group, school_year) %>%
@@ -33,10 +33,10 @@ demo_gaps <- rated_schools %>%
                                               "Students with Disabilities"))))
 
 demo_gaps %>%
-  filter(school_year == "2021-22") %>%
+  # filter(school_year == "2022-23") %>%
   ggplot(aes(group, value, fill = school_year)) +
-  geom_col(aes(fill = cfc_darkblue), position = position_nudge(x = -.1), width = .5) +
-  geom_col(data = demo_gaps %>% filter(school_year == "2022-23"), aes(fill = cfc_orange),
+  # geom_col(aes(fill = cfc_darkblue), position = position_nudge(x = -.1), width = .5) +
+  geom_col(data = demo_gaps %>% filter(school_year == "2023-24"), aes(fill = cfc_orange),
            position = position_nudge(x = .1), width = .5) +
   scale_x_discrete(labels = function(x) str_wrap(x, 15)) +
   scale_y_continuous(breaks = c(-1, 0, 1), limits = c(-1.05, 1.05), 
@@ -44,13 +44,13 @@ demo_gaps %>%
   scale_alpha_discrete(range = c(.25, 1), guide = "none") +
   geom_text(data = demo_gaps %>%
               filter(quality == "hq"),
-            aes(label = ifelse(school_year == "2021-22", percent(value, 1), ""),
-                y = ifelse(school_year == "2021-22" & value > .8, .75, value - .1)),
+            aes(label = ifelse(school_year == "2023-24", percent(value, 1), ""),
+                y = ifelse(school_year == "2023-24" & value > .8, .75, value - .1)),
             position = position_dodge(width = .55), color = "White",
             size = 3) +
   scale_fill_identity(name = "School Year",
                       breaks = c(cfc_darkblue, cfc_orange),
-                      labels = c("2021-22", "2022-23"),
+                      labels = c("2022-23", "2023-24"),
                       guide = "legend") +
   geom_rect(aes(xmin = 0, xmax = 5.5, ymin = 0, ymax = -1), fill = "white", alpha = .05) +
   geom_hline(yintercept = 0, color = "grey50", linetype = 2, size = 1) +

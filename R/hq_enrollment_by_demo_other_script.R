@@ -21,11 +21,11 @@ school_changes <- this_rc |>
   pivot_wider(names_from = school_year, 
               values_from = overall_score) |> 
   mutate(diff = `2023-24` - `2022-23`)
-  
+
 school_changes |> 
   ggplot(aes(diff)) +
   geom_histogram()
-  
+
 
 # change in rating category
 
@@ -48,7 +48,7 @@ this_rc |>
          overall_rating) |> 
   pivot_wider(names_from = school_year, values_from = overall_rating) |> 
   mutate(diff = `2023-24` - `2022-23`) |> 
-  View()
+  # View()
   group_by(`2022-23`, diff) |> 
   count() |> View()
 
@@ -66,9 +66,9 @@ changes <- this_rc |>
   arrange(diff, `2023-24`) |> 
   mutate(lows = ifelse(`2023-24` == 1 & diff < 0, TRUE, FALSE),
          lows = ifelse(is.na(lows), FALSE, lows))
-  # View()
-  # group_by(`2022-23`, diff) |> 
-  # count() |> View()
+# View()
+# group_by(`2022-23`, diff) |> 
+# count() |> View()
 
 changes |> 
   left_join(geocodes) |> 
@@ -82,6 +82,6 @@ changes |>
   filter(lows) |> 
   left_join(make_mke_rc() |> 
               filter(school_year == "2023-24")) |> View()
-  summarise(across(starts_with("per_"), 
-                   function(x) weighted.mean(x, w = school_enrollment, na.rm = TRUE)))
+summarise(across(starts_with("per_"), 
+                 function(x) weighted.mean(x, w = school_enrollment, na.rm = TRUE)))
 
